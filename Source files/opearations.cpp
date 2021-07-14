@@ -4,14 +4,14 @@
 #include <algorithm> 
 #include "XML_Parser.h"
 
-XML_Parser::XML_Parser(string raw_xml)
+Tree::XML_Parser(string raw_xml)
 {
 	this->root = NULL;
 	this->parse(raw_xml);
 
 }
 
-string XML_Parser::prettify(node* current_node, string tab)
+string Tree::prettify(node* current_node, string tab)
 {
 	string s="";
 	if (current_node->is_valid) {
@@ -38,7 +38,7 @@ string XML_Parser::prettify(node* current_node, string tab)
 
 
 
-string XML_Parser::convert_json(node* current_node, string tab,bool print_tag) {
+string Tree::convert_json(node* current_node, string tab,bool print_tag) {
 	string s = "";
 	if (current_node->is_tag) {
 		vector<string> v;
@@ -153,14 +153,3 @@ string XML_Parser::convert_json(node* current_node, string tab,bool print_tag) {
 	return s;
 }
 
-void XML_Parser :: traverse(node* current) {
-	cout << current->tag_name << "+"<<(current->is_valid==true)<< endl;
-	if (current->num_children == 0)
-	{
-		return;
-	}
-	//cout << root->tag_name << endl;// "     " << root->getAttr() << "  " << root->getCorrectTag() << "    " << root->getErrorTag() << endl;
-	for (auto i : current->children) {
-		traverse(i);
-	}
-}
