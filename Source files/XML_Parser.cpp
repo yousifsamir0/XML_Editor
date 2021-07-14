@@ -82,8 +82,12 @@ string XML_Parser::convert_json(node* current_node, string tab,bool print_tag) {
 								else { attrib += ","; }
 							}
 						}
-						if (current_node->children[i]->is_tag && current_node->num_children > 1 || counter2>1) {
-							s += "[\n"; flag = true; 
+						if ((current_node->children[i]->is_tag && current_node->children[i]->num_children > 1) || counter2>1) {
+							auto x = current_node->children[i];
+							auto var = ((current_node->children[i]->is_tag && current_node->children[i]->num_children > 1) || counter2 > 1);
+							
+							s += "[\n";
+							flag = true; 
 						}
 					}
 
