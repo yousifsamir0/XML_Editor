@@ -38,4 +38,4 @@ public:
 
 	friend class XML_Parser;
 };
-#endf
+#endif
