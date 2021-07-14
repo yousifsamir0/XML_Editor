@@ -276,7 +276,7 @@ void Tree::parser(string rawXml)
     }
 }
 
-string Tree::minify(string rawXml)
+string Tree::minify(string raw_Xml)
 {   
     string after_minify = "";
     for (int i = 0; i < rawXml.length(); i++)
