@@ -1,6 +1,8 @@
 #ifndef NODE_H
 #define NODE_H
 using namespace std;
+#include<vector>
+#include<string>
 class node
 {
 private:
