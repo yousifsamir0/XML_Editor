@@ -44,7 +44,7 @@ public:
     bool getIsComment();
     bool getIsSelfClose();
 
-    friend class XML_Parser;
+    friend class Tree;
 };
 
 class Tree
