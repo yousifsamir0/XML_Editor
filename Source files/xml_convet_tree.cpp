@@ -7,9 +7,7 @@
 #include <new>
 #include "tree.h"
 using namespace std;
-using std::cout; using std::cerr;
-using std::endl; using std::string;
-using std::ifstream; using std::ostringstream;
+
 node::node(string name, bool is_tag, bool self_close_, bool comment_)
 {
     this->tag_name = name;
