@@ -97,18 +97,6 @@ bool node::getState()
 
 
 
-
-
-string readFileIntoString(const string& path) {
-    ifstream input_file(path);
-    if (!input_file.is_open()) {
-        cerr << "Could not open the file - '"
-            << path << "'" << endl;
-        exit(EXIT_FAILURE);
-    }
-    return string((std::istreambuf_iterator<char>(input_file)), std::istreambuf_iterator<char>());
-}
-
 void Tree::allocate_tage_to_parent(stack<node*>* xmlTags, string tag)
 {
     if (xmlTags->size() > 1) {
@@ -301,15 +289,3 @@ string Tree::minify(string rawXml)
     return after_minify;
 }
 
-//int main()
-//{
-    //string filename("xml2.xml");//put file name
-    //string file_contents;
-    //file_contents = readFileIntoString(filename);
-    //Tree* tree = new Tree();
-    //tree->parser(file_contents);
-    //traverse(tree->getRoot());
-  
-    
-    //return 0;
-//}
