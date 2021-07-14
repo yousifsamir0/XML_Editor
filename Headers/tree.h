@@ -21,6 +21,7 @@ private:
     bool state;
     vector<string> attributes;
     vector<string> attrib_value;
+    int num_children;
 
 public:
     node(string name, bool is_tag, bool self_close_, bool comment_);
