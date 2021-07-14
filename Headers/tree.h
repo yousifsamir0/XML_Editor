@@ -77,3 +77,4 @@ public:
     string prettify(node *r, string tab);
     string convert_json(node *current_node, string tab, bool print_tag);
 };
+#endif
