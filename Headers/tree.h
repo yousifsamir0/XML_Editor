@@ -73,7 +73,7 @@ public:
     void allocate_tage_to_parent(stack<node *> *xmlTags, string tag);
     void data_node(stack<node *> *xmlTags, node *data, bool state);
     void parser(string rawXml); // function to call
-    void minify(string rawXml);
+    string minify(string raw_Xml);
     string prettify(node *r, string tab);
     string convert_json(node *current_node, string tab, bool print_tag);
 };
