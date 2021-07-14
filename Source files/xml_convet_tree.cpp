@@ -290,17 +290,15 @@ void Tree::parser(string rawXml)
     }
 }
 
-void traverse(node* root)
-{
-    if (root->getChild().size()==0) {
-        cout << root->tagName() << " " << root->getAttr() << root->getEndTag() << " ";
-        return;
+string Tree::minify(string rawXml)
+{   
+    string after_minify = "";
+    for (int i = 0; i < rawXml.length(); i++)
+    {
+        if ((int(rawXml[i]) > 32 && int(rawXml[i]) < 125)||((rawXml[i]) ==' '&& rawXml[i+1]!=' '))
+            after_minify += rawXml[i];
     }
-    cout << root->tagName() << " " << root->getAttr();
-    int j = root->getChild().size();
-    for (int i = 0; i < j; i++)
-        traverse(root->getChild()[i]);
-    cout <<root->getCorrectTag()<<endl;
+    return after_minify;
 }
 
 //int main()
