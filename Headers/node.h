@@ -15,6 +15,8 @@ private:
 	bool self_close;
 	bool comment;
 	bool state;
+	vector<string>attributes;
+	vector<string>attrib_value;
 
 public:
 	node(string name, bool is_tag, bool self_close_, bool comment_);
