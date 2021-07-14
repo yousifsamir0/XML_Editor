@@ -36,6 +36,7 @@ bool node::isTag()
 }
 void node::addChild(node* child) {
     this->children.push_back(child);
+    num_children++;
 }
 void node::addAtrr(string attrbiute)
 {
@@ -302,15 +303,15 @@ void traverse(node* root)
     cout <<root->getCorrectTag()<<endl;
 }
 
-int main()
-{
-    string filename("xml2.xml");//put file name
-    string file_contents;
-    file_contents = readFileIntoString(filename);
-    Tree* tree = new Tree();
-    tree->parser(file_contents);
-    traverse(tree->getRoot());
+//int main()
+//{
+    //string filename("xml2.xml");//put file name
+    //string file_contents;
+    //file_contents = readFileIntoString(filename);
+    //Tree* tree = new Tree();
+    //tree->parser(file_contents);
+    //traverse(tree->getRoot());
   
     
-    return 0;
-}
+    //return 0;
+//}
