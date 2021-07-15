@@ -201,7 +201,7 @@ void Tree::parser(string rawXml)
                     end_tag += rawXml[i];
                     i++;
                 }
-                node* comment_ = new node(end_tag, true, true, false);
+                node* comment_ = new node(end_tag, true, false, true);
                 data_node(&xmlTags, comment_, false);
                 end_tag = "";
             }
@@ -215,7 +215,7 @@ void Tree::parser(string rawXml)
                     i++;
                 }
 
-                node* self_close_ = new node(end_tag, true, false, true);
+                node* self_close_ = new node(end_tag, true, true, false);
                 if (r == 0) {
                     this->setRoot(self_close_);
 		    this->root->setValid(true);
@@ -274,13 +274,10 @@ void Tree::parser(string rawXml)
                 data += rawXml[i];
                 i++;
             }
-            if (rawXml[i + 1] != '/')
-                state = true;
-            else
-                state = false;
-            node* dataNode = new node(data, false, false, false);
-            data_node(&xmlTags, dataNode, state);
-            state = false;
+            if (int(data[0]) != 10) {
+		node* dataNode = new node(data, false, false, false);
+		data_node(&xmlTags, dataNode, state);
+	     }
             data = "";
             i--;
         }
