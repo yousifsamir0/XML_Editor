@@ -7,7 +7,7 @@
 using namespace std;
 class node
 {
-private:
+public:
     vector<node *> children;
     string tag_name;
     bool is_tag;
@@ -23,10 +23,10 @@ private:
     vector<string> attrib_value;
     int num_children;
 
-public:
     node(string name, bool is_tag, bool self_close_, bool comment_);
     ~node();
     void addChild(node *child);
+    void set_attribute(string attribute);
     bool isTag();
     void addAtrr(string attrbiute);
     string getAttr();
@@ -58,9 +58,15 @@ public:
     {
         root = NULL;
     }
+    void delete_tree(node* current_node) {
+		for (auto i : current_node->children) {
+			delete_tree(i);
+		}
+		delete current_node;
+	}
     ~Tree()
     {
-        delete this;
+        delete_tree(this->root);
     }
     void setRoot(node *ptr)
     {
