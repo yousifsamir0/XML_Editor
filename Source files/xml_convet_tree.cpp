@@ -218,6 +218,7 @@ void Tree::parser(string rawXml)
                 node* self_close_ = new node(end_tag, true, false, true);
                 if (r == 0) {
                     this->setRoot(self_close_);
+		    this->root->setValid(true);
                     xmlTags.push(self_close_);
                 }
                 else
