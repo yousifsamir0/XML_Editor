@@ -79,7 +79,7 @@ string Tree::convert_json(node * current_node, string tab) {
 	else if (current_node->getIsSelfClose()) {
 		if (current_node->tag_name.substr(0, 4) != "?xml") {
 			int i = 0;
-			s += "\"";
+			s += tab+"\"";
 			while (current_node->tag_name[i] != ' ') {
 				s += current_node->tag_name[i];
 				i++;
@@ -156,7 +156,9 @@ string Tree::convert_json(node * current_node, string tab) {
 								if (j + 1 == current_node->children[i]->attributes.size()) {
 									attrib += "\n";
 								}
-								else { attrib += ","; }
+								else {
+									attrib += ","; 
+								}
 							}
 						}
 						if ((current_node->children[i]->is_tag  && counter2 > 1)) {
@@ -175,7 +177,9 @@ string Tree::convert_json(node * current_node, string tab) {
 					else if(current_node->children[i]->have_data && counter2 == 1){
 						s += convert_json(current_node->children[i], tab + "      ");
 						bool cond = (counter < counter2 - 1);
-						if ((counter2 == 1 && current_node->children[i]->attributes.size() >= 0 && v[v.size() - 1] != tag) || cond) { s += ",\n"; }
+						if ((counter2 == 1 && current_node->children[i]->attributes.size() >= 0 && v[v.size() - 1] != tag) || cond) {
+							s += ",\n"; 
+						}
 						else { s += "\n"; }
 					}
 					else {
@@ -212,7 +216,8 @@ string Tree::convert_json(node * current_node, string tab) {
 		}
 		if (is_root_node) {
 			s += tab + "}";
-			s += ",";
+			if(current_node->attributes.size()>0)
+				s += ",";
 			for (int i = 0; i < current_node->attributes.size(); i++) {
 				s += "\n" + tab;
 				s += "\"_" + current_node->attributes[i] + "\"" + ": " + "\"" + current_node->attrib_value[i] + "\"";
