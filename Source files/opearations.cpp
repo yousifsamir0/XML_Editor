@@ -2,77 +2,116 @@
 #include <vector>
 #include<stack>
 #include <algorithm> 
-#include "XML_Parser.h"
-
-Tree::XML_Parser(string raw_xml)
-{
-	this->root = NULL;
-	this->parse(raw_xml);
-
-}
+#include<string>
+#include "Tree.h"
+using namespace std;
 
 string Tree::prettify(node* current_node, string tab)
 {
-	string s="";
-	if (current_node->is_valid) {
-		s += tab+"<" + current_node->tag_name;
-		for (int i = 0; i < current_node->attributes.size(); i++) {
-			s += " " + current_node->attributes[i] + "=\"" + current_node->attrib_value[i] + "\"";
-		}
+	string s = "";
+	bool flag = false;
+	if (current_node->getIsComment()) {
+		s += tab+"<" + current_node->tag_name + ">";
+	}
+	else if(current_node->getIsSelfClose()){
+		s += tab + "<" + current_node->tag_name+" "+current_node->attr+">"+"";
+	}
+
+	else if (current_node->is_tag) {
+		s += tab + "<" + current_node->tag_name+" ";
+		s += current_node->attr;
 		s += ">";
+		flag = true;
+	}
+	else {
+		if (current_node->children.size() == 0) {
+			s += (current_node->tag_name);
+		}
+		else {
+			s += "\n";
+			s += (current_node->tag_name);
+		}
+		
 	}
 
-	if (!current_node->is_tag && current_node->is_valid) {
-		 s+=(current_node->data);
-		 s +=  "</" + current_node->tag_name + ">\n";
-		 return s;
-	}
-	if (current_node->is_tag) { s += "\n"; }
+	if (current_node->is_tag && ! current_node->getHaveData()) { s += "\n";}
 	for (auto i : current_node->children) {
-		s += prettify(i,"   "+tab);
+		s += prettify(i, "   " + tab);
+	}
+	//
+
+	if (flag && current_node->getHaveData() && current_node->is_valid){
+
+		s += "</" + current_node->tag_name + ">\n";
+		flag = false;
+	}
+	else if (flag && current_node->is_valid) {
+		s += tab+"</" + current_node->tag_name + ">\n";
 	}
 
-	s += tab+"</" + current_node->tag_name + ">\n";
+	else if (flag && current_node->getHaveData() && current_node->children.size()==0) {
+		s += "</" + current_node->getCorrectTag() + ">\n";
+		flag = false;
+	}
+	else if (flag) {
+		s += tab + "</" + current_node->tag_name + ">\n";
+		flag = false;
+	}
+
+	
 	return s;
 }
 
 
 
-string Tree::convert_json(node* current_node, string tab,bool print_tag) {
+string Tree::convert_json(node * current_node, string tab) {
+	// there is missing in end of json {
 	string s = "";
-	if (current_node->is_tag) {
+	bool is_root_node = false;
+	if (current_node->getIsComment()) {
+		return s; 
+	}
+	else if (current_node->getIsSelfClose()) {
+		for (auto i : current_node->children) {
+			if (i->tag_name.substr(0, 4) != "?xml") {
+				current_node = i;
+				is_root_node = true;
+			}
+		}
+	}
+	if (current_node->is_tag&&!current_node->getHaveData()) {
 		vector<string> v;
 		for (auto i : current_node->children) {
 			v.push_back(i->tag_name);
 		}
 		sort(v.begin(), v.end());
 		v.erase(unique(v.begin(), v.end()), v.end());
-		
-		
-
-		if (current_node == this->root) { 
+		if (is_root_node) {
 			s += "{\n";
-			s +=   "\"" + current_node->tag_name + "\"" + ":"; 
-			
+			s += "\"" + current_node->tag_name + "\"" + ":";
 		}
+		if (!current_node->have_data) {
+			s += tab + "{\n";
+		}
+		
 
-		s += tab+"{\n";
-
-		int counter2= 0;
+		int counter2 = 0;
 		int counter = 0;
 		bool flag = false;
 		bool flag2 = false;
+		bool attrib_node = false;
 		string attrib = "";
 		for (auto tag : v) {
 			counter2 = 0;
 			for (int i = 0; i < current_node->num_children; i++) {
 				if (tag == current_node->children[i]->tag_name) { counter2++; }
 			}
-			for (int i = 0; i < current_node->num_children;i++) {
+			for (int i = 0; i < current_node->num_children; i++) {
 				if (tag == current_node->children[i]->tag_name) {
-					if (counter==0) {
+					if (counter == 0  && current_node->children[i]->children.size()!=0) {
 						s += tab + "\"" + current_node->children[i]->tag_name + "\"" + ": ";
-						if (current_node->children[i]->is_tag) {
+						if (current_node->children[i]->is_tag && !current_node->children[i]->have_data) {
+
 							for (int j = 0; j < current_node->children[i]->attributes.size(); j++) {
 								attrib += "\n" + tab;
 								attrib += "\"_" + current_node->children[i]->attributes[j] + "\"" + ": " + "\"" + current_node->children[i]->attrib_value[j] + "\"";
@@ -82,46 +121,55 @@ string Tree::convert_json(node* current_node, string tab,bool print_tag) {
 								else { attrib += ","; }
 							}
 						}
-						if ((current_node->children[i]->is_tag && current_node->children[i]->num_children > 1) || counter2>1) {
-							auto x = current_node->children[i];
-							auto var = ((current_node->children[i]->is_tag && current_node->children[i]->num_children > 1) || counter2 > 1);
-							
+						if ((current_node->children[i]->is_tag  && counter2 > 1)) {
 							s += "[\n";
-							flag = true; 
+							flag = true;
 						}
 					}
-
-					if (!current_node->children[i]->is_tag && counter2 > 1) {
-						s += tab+convert_json(current_node->children[i], tab + "  ", true);
-						if (counter < counter2-1)
+					auto ex = current_node->children[i];
+					if (current_node->children[i]->have_data && counter2 > 1) {
+						s += tab + convert_json(current_node->children[i], tab + "  ");
+						if (counter < counter2 - 1)
 							s += ",\n";
 						else
 							s += "\n";
 					}
+					else if(current_node->children[i]->have_data && counter2 == 1){
+						s += convert_json(current_node->children[i], tab + "  ");
+						bool cond = (counter < counter2 - 1);
+						if ((counter2 == 1 && current_node->children[i]->attributes.size() >= 0 && v[v.size() - 1] != tag) || cond) { s += ",\n"; }
+						else { s += "\n"; }
+					}
 					else {
-						s += convert_json(current_node->children[i], tab + "  ", true);
-						bool cond = (counter < counter2-1);
+						s += convert_json(current_node->children[i], tab + "  ");
+						bool cond = (counter < counter2 - 1);
 						if ((counter2 == 1 && current_node->children[i]->attributes.size() >= 0 && v[v.size() - 1] != tag) || cond) { s += ",\n"; }
 						else { s += "\n"; }
 					}
 					counter++;
-					
+
 				}
 			}
-			if (flag ) {
-				if (v[v.size() - 1] != tag) { s += tab + "],\n"; }
-				else { s += tab + "]\n"; }
-				
+			auto y = true;
+			if (flag) {
+				if (v[v.size() - 1] != tag) {
+					s += tab + "],\n"; 
+				}
+				else {
+					s += tab + "]\n"; 
+				}
+
 				flag = false;
 			}
-			if (attrib!="") {
+			if (attrib != "") {
 				s += ",";
+				s += attrib;
+				attrib = "";
 			}
-			s += attrib;
-			attrib = "";
-			counter=0;
+			
+			counter = 0;
 		}
-		if (current_node == this->root) {
+		if (is_root_node) {
 			s += tab + "}";
 			s += ",";
 			for (int i = 0; i < current_node->attributes.size(); i++) {
@@ -133,23 +181,24 @@ string Tree::convert_json(node* current_node, string tab,bool print_tag) {
 				else { s += ","; }
 			}
 			s += "}";
-		} 
-		else {
+			is_root_node = false;
+		}
+		else if(!current_node->have_data) {
 			s += tab + "}\n";
 		}
 	}
-	else if(current_node->attributes.size() > 0){
-		s += "\n"+ tab + "{\n"+ tab + "\"__text\": \"" + current_node->data + "\",\n";
+	else if (current_node->attributes.size() > 0) {
+		s += "\n" + tab + "{\n" + tab + "\"__text\": \"" + current_node->children[0]->tag_name + "\",\n";
 		for (int i = 0; i < current_node->attributes.size(); i++) {
 			s += tab + "\"_" + current_node->attributes[i] + "\"" + ": " + "\"" + current_node->attrib_value[i] + "\"";
-			if (i+1== current_node->attributes.size()) { s += "\n"; }
+			if (i + 1 == current_node->attributes.size()) { s += "\n"; }
 			else { s += ",\n"; }
 		}
-		s += tab+"}";
+		s += tab + "}";
+
 	}
 	else {
-		s +=  "\"" + current_node->data + "\"";
+		s += "\"" + current_node->children[0]->tag_name + "\"";
 	}
 	return s;
 }
-
