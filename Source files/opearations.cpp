@@ -42,7 +42,7 @@ string Tree::prettify(node* current_node, string tab)
 			s += prettify(current_node->children[i],tab);
 		}
 		else {
-			s += prettify(current_node->children[i], "   " + tab);
+			s += prettify(current_node->children[i], "      " + tab);
 		}
 	}
 	if (flag && current_node->getHaveData() && current_node->is_valid) {
@@ -166,20 +166,20 @@ string Tree::convert_json(node * current_node, string tab) {
 					}
 					auto ex = current_node->children[i];
 					if (current_node->children[i]->have_data && counter2 > 1) {
-						s += tab + convert_json(current_node->children[i], tab + "  ");
+						s += tab + convert_json(current_node->children[i], tab + "      ");
 						if (counter < counter2 - 1)
 							s += ",\n";
 						else
 							s += "\n";
 					}
 					else if(current_node->children[i]->have_data && counter2 == 1){
-						s += convert_json(current_node->children[i], tab + "  ");
+						s += convert_json(current_node->children[i], tab + "      ");
 						bool cond = (counter < counter2 - 1);
 						if ((counter2 == 1 && current_node->children[i]->attributes.size() >= 0 && v[v.size() - 1] != tag) || cond) { s += ",\n"; }
 						else { s += "\n"; }
 					}
 					else {
-						s += convert_json(current_node->children[i], tab + "  ");
+						s += convert_json(current_node->children[i], tab + "      ");
 						//cout << s << endl;
 						//cout << "============" << endl;
 						bool cond = (counter < counter2 - 1);
