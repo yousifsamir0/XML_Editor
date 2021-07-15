@@ -77,6 +77,12 @@ public:
     {
         return this->root;
     }
+    string get_json() {
+	    return this->convert_json(this->root, "");
+    }
+    string get_pretty() {
+	return this->prettify(this->root, "");
+    }
     void allocate_tage_to_parent(stack<node *> *xmlTags, string tag);
     void data_node(stack<node *> *xmlTags, node *data, bool state);
     void parser(string rawXml); // function to call
