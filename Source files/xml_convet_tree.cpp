@@ -23,7 +23,30 @@ node::~node()
 {
 
 }
+void node::addAtrr(string attrbiute)
+{
+	int i = 0;
+	string name = "";
+	string value = "";
+	while (i < attrbiute.length()) {
+		name = "";
+		value = "";
+		while (attrbiute[i] != '=') {
+			name += attrbiute[i];
+			i++;
+		}
+		i += 2;
+		while (attrbiute[i] != '"' && i < attrbiute.length()) {
+			value += attrbiute[i];
+			i++;
+		}
+		i++;
+		this->attributes.push_back(name);
+		this->attrib_value.push_back(value);
+	}
 
+	this->attr = attrbiute;
+}
 string node::tagName()
 {
     return this->tag_name;
