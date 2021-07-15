@@ -302,7 +302,7 @@ string Tree::minify(string raw_Xml)
     string after_minify = "";
     for (int i = 0; i < rawXml.length(); i++)
     {
-        if ((int(rawXml[i]) > 32 && int(rawXml[i]) < 125)||((rawXml[i]) ==' '&& rawXml[i+1]!=' ' && rawXml[i-1]!=' ')))
+        if ((int(rawXml[i]) > 32 && int(rawXml[i]) < 125)||(rawXml[i]) ==' '&& rawXml[i+1]!=' '))
             after_minify += rawXml[i];
     }
     return after_minify;
