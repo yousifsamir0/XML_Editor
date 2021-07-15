@@ -57,6 +57,7 @@ public:
     Tree()
     {
         root = NULL;
+	parser(this->raw_xml);
     }
     void delete_tree(node* current_node) {
 		for (auto i : current_node->children) {
