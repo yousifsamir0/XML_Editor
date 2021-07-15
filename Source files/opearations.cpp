@@ -10,20 +10,21 @@ string Tree::prettify(node* current_node, string tab)
 {
 	string s = "";
 	bool flag = false;
-	if (current_node->getIsComment()) {
-		s += tab+"<" + current_node->tag_name + ">";
+	bool is_header = current_node->tag_name.substr(0, 4) == "?xml";
+	if (current_node->getIsComment()&& ! is_header) {
+		s += tab + "<" + current_node->tag_name + ">";
 	}
-	else if(current_node->getIsSelfClose()){
-		s += tab + "<" + current_node->tag_name+" "+current_node->attr+">"+"";
+	else if (current_node->getIsSelfClose()&&!is_header) {
+		s += tab + "<" + current_node->tag_name + " " + current_node->attr + ">" + "";
 	}
 
-	else if (current_node->is_tag) {
-		s += tab + "<" + current_node->tag_name+" ";
+	else if (current_node->is_tag&& !is_header) {
+		s += tab + "<" + current_node->tag_name + " ";
 		s += current_node->attr;
 		s += ">";
 		flag = true;
 	}
-	else {
+	else if(!is_header){
 		if (current_node->children.size() == 0) {
 			s += (current_node->tag_name);
 		}
@@ -31,25 +32,29 @@ string Tree::prettify(node* current_node, string tab)
 			s += "\n";
 			s += (current_node->tag_name);
 		}
-		
+
 	}
 
-	if (current_node->is_tag && ! current_node->getHaveData()) { s += "\n";}
-	for (auto i : current_node->children) {
-		s += prettify(i, "   " + tab);
-	}
-	//
+	if (current_node->is_tag && !current_node->getHaveData()&& !is_header) { s += "\n"; }
 
-	if (flag && current_node->getHaveData() && current_node->is_valid){
+	for (int i = 0; i < current_node->children.size();i++) {
+		if (is_header||current_node->children[i]->getIsComment()){
+			s += prettify(current_node->children[i],tab);
+		}
+		else {
+			s += prettify(current_node->children[i], "   " + tab);
+		}
+	}
+	if (flag && current_node->getHaveData() && current_node->is_valid) {
 
 		s += "</" + current_node->tag_name + ">\n";
 		flag = false;
 	}
 	else if (flag && current_node->is_valid) {
-		s += tab+"</" + current_node->tag_name + ">\n";
+		s += tab + "</" + current_node->tag_name + ">\n";
 	}
 
-	else if (flag && current_node->getHaveData() && current_node->children.size()==0) {
+	else if (flag && current_node->getHaveData() && current_node->children.size() == 0) {
 		s += "</" + current_node->getCorrectTag() + ">\n";
 		flag = false;
 	}
@@ -58,7 +63,7 @@ string Tree::prettify(node* current_node, string tab)
 		flag = false;
 	}
 
-	
+
 	return s;
 }
 
