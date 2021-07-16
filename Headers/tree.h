@@ -18,12 +18,12 @@ public:
     string data;
     bool self_close;
     bool comment;
-    bool state;
     vector<string> attributes;
     vector<string> attrib_value;
     int num_children;
+    bool xml;
 
-    node(string name, bool is_tag, bool self_close_, bool comment_);
+    node(string name, bool is_tag, bool self_close_, bool comment_, bool xml);
     ~node();
     void addChild(node *child);
     void set_attribute(string attribute);
@@ -33,10 +33,6 @@ public:
     void setValid(bool statue);
     void setHaveData();
     bool getHaveData();
-    void setState(bool state);
-    bool getState();
-    void setEndTag(string tag);
-    string getEndTag();
     void setCorrectTag(string tag);
     string getCorrectTag();
     vector<node *> getChild();
@@ -52,31 +48,19 @@ class Tree
 private:
     node *root;
     string raw_xml;
+    string WHITESPACE = " \n\r\t\f\v";
+    std::string ltrim(const std::string& s);
+    std::string rtrim(const std::string& s);
+    std::string trim(const std::string& s);
+    void data_node(std::stack<node*>* xmlTags, node* data);
 
 public:
-    Tree()
-    {
-        root = NULL;
-	parser(this->raw_xml);
-    }
-    void delete_tree(node* current_node) {
-		for (auto i : current_node->children) {
-			delete_tree(i);
-		}
-		delete current_node;
-	}
-    ~Tree()
-    {
-        delete_tree(this->root);
-    }
-    void setRoot(node *ptr)
-    {
-        this->root = ptr;
-    }
-    node *getRoot()
-    {
-        return this->root;
-    }
+    Tree(string rawXml);
+    Tree(){};
+     void delete_tree(node* current_node);
+    ~Tree();
+    void setRoot(node *ptr);
+    node *getRoot();
     string get_json() {
 	    return this->convert_json(this->root, "");
     }
@@ -84,10 +68,11 @@ public:
 	return this->prettify(this->root, "");
     }
     void allocate_tage_to_parent(stack<node *> *xmlTags, string tag);
-    void data_node(stack<node *> *xmlTags, node *data, bool state);
-    void parser(string rawXml); // function to call
-    string minify(string raw_Xml);
+    void parser(string rawXml);
+    string minify(node* root, int tab);
+    string minify();
     string prettify(node *r, string tab);
+    string prettify();
     string convert_json(node *current_node, string tab, bool print_tag);
 };
 #endif
