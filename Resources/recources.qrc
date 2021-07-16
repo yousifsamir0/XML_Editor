@@ -1,0 +1,15 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>new.png</file>
+        <file>open.png</file>
+        <file>floppy-disk.png</file>
+        <file>352388_format_line_spacing_icon.png</file>
+        <file>compress (1).png</file>
+        <file>compress.png</file>
+        <file>extract-file-button.png</file>
+        <file>file.png</file>
+        <file>json.png</file>
+        <file>minify.png</file>
+        <file>json (2).png</file>
+    </qresource>
+</RCC>
