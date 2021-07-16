@@ -8,12 +8,13 @@
 #include "tree.h"
 using namespace std;
 
-node::node(string name, bool is_tag, bool self_close_, bool comment_)
+node::node(string name, bool is_tag, bool self_close_, bool comment_, bool xml)
 {
     this->tag_name = name;
     this->is_tag = is_tag;
     this->comment = comment_;
     this->self_close = self_close_;
+    this->xml = xml;
     have_data = false;
     err_tag = "";
     correct_tag = "";
@@ -59,10 +60,6 @@ void node::addChild(node* child) {
     this->children.push_back(child);
     num_children++;
 }
-void node::addAtrr(string attrbiute)
-{
-    this->attr = attrbiute;
-}
 void node::setValid(bool statue)
 {
     this->is_valid = statue;
@@ -107,62 +104,60 @@ bool node::getIsSelfClose()
 {
     return this->self_close;
 }
-void node::setState(bool state)
-{
-    this->state = state;
-}
-bool node::getState()
-{
-    return this->state;
-}
 
 
 
 void Tree::allocate_tage_to_parent(stack<node*>* xmlTags, string tag)
 {
-    if (xmlTags->size() > 1) {
+    if (!xmlTags->empty()) {
 
         if (xmlTags->top()->tagName() != tag)
         {
             stack<node*> my_stk;
 
-            while (xmlTags->size() > 1 && xmlTags->top()->tagName() != tag)
+            while (!xmlTags->empty() && xmlTags->top()->tagName() != tag)
             {
                 my_stk.push(xmlTags->top());
                 xmlTags->pop();
             }
-            if (xmlTags->size() > 1 && xmlTags->top()->tagName() == tag)
+            if (xmlTags->empty())
             {
                 while (!my_stk.empty()) {
-                    xmlTags->top()->addChild(my_stk.top());
-                    my_stk.top()->setValid(false);
+                   xmlTags->push(my_stk.top());
                     my_stk.pop();
                 }
-                xmlTags->top()->setValid(true);
+             xmlTags->top()->setValid(false);
                 node* value = xmlTags->top();
                 xmlTags->pop();
                 xmlTags->top()->addChild(value);
+                value->setCorrectTag(value->tagName());
             }
             else {
-                while (!my_stk.empty()) {
-                    xmlTags->push(my_stk.top());
-                    my_stk.pop();
-                }
-                xmlTags->top()->setValid(false);
-                node* value = xmlTags->top();
+                 node* value = xmlTags->top();
                 xmlTags->pop();
                 xmlTags->top()->addChild(value);
+                value->setValid(true);
+                value->setCorrectTag(value->tagName());
+                while (!my_stk.empty()) {
+                    node* value_ = my_stk.top();
+                    my_stk.pop();
+                    value_->setValid(false);
+                    value_->setCorrectTag(value_->tagName());
+                    value->addChild(value_);
+                    value = value_;
+                }
 
             }
 
         }
         if (xmlTags->top()->tagName() == tag)
         {
-            node* value = xmlTags->top();
+             node* value = xmlTags->top();
             xmlTags->pop();
-            xmlTags->top()->addChild(value);
+            if (!xmlTags->empty())
+                xmlTags->top()->addChild(value);
             value->setValid(true);
-            value->setEndTag(tag);
+            value->setCorrectTag(value->tagName());
 
         }
     }
@@ -175,136 +170,205 @@ void Tree::data_node(stack<node*>* xmlTags, node* data, bool state) {
 
     if (!data->isTag()) {
         xmlTags->top()->setHaveData();
-        xmlTags->top()->setState(state);
     }
 }
-void Tree::parser(string rawXml)
+std::string Tree::ltrim(const std::string& s)
 {
-    stack<node*> xmlTags;
+    size_t start = s.find_first_not_of(WHITESPACE);
+    return (start == std::string::npos) ? "" : s.substr(start);
+}
+
+std::string Tree::rtrim(const std::string& s)
+{
+    size_t end = s.find_last_not_of(WHITESPACE);
+    return (end == std::string::npos) ? "" : s.substr(0, end + 1);
+}
+
+
+std::string Tree::trim(const std::string& s) {
+    return rtrim(ltrim(s));
+}
+
+
+void Tree::parser(std::string rawXml)
+{
+    std::stack<node*> xmlTags;
     int start_attr;
-    string tag_name = "";
-    string end_tag = "";
-    string attr_name = ""; //attributes in open tag
-    bool first_space = false;
-    string data = "";
+    std::string tag_name = "";
+    std::string attr_name = ""; //attributes in open tag
+    std::string data = "";
     int r = 0;
-    bool state = false;
     for (int i = 0; i < rawXml.length(); i++)
     {
-        if (rawXml[i] == '<' && rawXml[i + 1] != '/')
+        if (rawXml[i] == '<')
         {
-            if (rawXml[i + 1] == '!')
-            {
-                i++;
-                while (rawXml[i] != '>')
-                {
-                    end_tag += rawXml[i];
-                    i++;
-                }
-                node* comment_ = new node(end_tag, true, false, true);
-                data_node(&xmlTags, comment_, false);
-                end_tag = "";
-            }
-            else if (rawXml[i + 1] == '?')
-            {
-
-                i++;
-                while (rawXml[i] != '>')
-                {
-                    end_tag += rawXml[i];
-                    i++;
-                }
-
-                node* self_close_ = new node(end_tag, true, true, false);
-                if (r == 0) {
-                    this->setRoot(self_close_);
-		    this->root->setValid(true);
-                    xmlTags.push(self_close_);
-                }
-                else
-                    data_node(&xmlTags, self_close_, false);
-                r++;
-                end_tag = "";
-            }
-            else
-            {
-                i++;
-                while (rawXml[i] != '>')
-                {
-                    while (rawXml[i] != ' ' && rawXml[i] != '>' && first_space == false)
-                    {
-
-                        tag_name += rawXml[i];
-                        i++;
-                    }
-                    first_space = true;
-                    rawXml[i] == ' ' ? i++ : i;
-                    if (rawXml[i] == '>')
-                    {
-                        break;
-                    }
-                    while (rawXml[i] != '>' && first_space == true)
-                    {
-                        attr_name += rawXml[i];
-                        i++;
-                    }
-                }
-                if (rawXml[i - 1] == '/')
-                {
-                    node* self_close_ = new node(tag_name + " " + attr_name, true, true, false);
-                    data_node(&xmlTags, self_close_, false);
-                }
-                else
-                {
-                    node* openTag = new node(tag_name, true, false, false);
-                    openTag->addAtrr(attr_name);
-                    if (xmlTags.size() > 1)
-                        openTag->setCorrectTag(tag_name);
-                    xmlTags.push(openTag);
-                }
-                tag_name = "";
-                attr_name = "";
-                first_space = false;
-            }
-        }
-        if (rawXml[i] != '>' && rawXml[i] != '<')
-        {
-            while (rawXml[i] != '<')
+            i++;
+            while (rawXml[i] != '>')
             {
                 data += rawXml[i];
                 i++;
             }
-            if (int(data[0]) != 10) {
-		node* dataNode = new node(data, false, false, false);
-		data_node(&xmlTags, dataNode, state);
-	     }
+            if (data[0] == '!')//comment
+            {
+                if (r == 0)
+                {
+                    this->setRoot(new node(data, true, false, true, false));
+                    xmlTags.push(this->getRoot());
+                    r = 1;
+                }
+                else
+                {
+                    data_node(&xmlTags, new node(data, true, false, true, false));
+                }
+            }
+            else if (data[0] == '?')//?xml
+            {
+                if (r == 0)
+                {
+                    this->setRoot(new node(data, true, false, false, true));
+                    xmlTags.push(this->getRoot());
+                    r = 1;
+                }
+                else
+                {
+                    data_node(&xmlTags, new node(data, true, false, false, true));
+                }
+            }
+            else if (data[0] == '/')//end tag
+            {
+                data = data.substr(1, data.length());
+                allocate_tage_to_parent(&xmlTags, data);
+            }
+            else if (rawXml[i - 1] == '/')//self close
+            {
+                if (r == 0)
+                {
+                    this->setRoot(new node(data, true, true, false, false));
+                    xmlTags.push(this->getRoot());
+                    r = 1;
+                }
+                else
+                {
+                    data_node(&xmlTags, new node(data, true, true, false, false));
+                }
+            }
+            else//open tag
+            {
+                if (data.find(' ') < 100) {
+                    tag_name = data.substr(0, data.find(' '));
+                    attr_name = data.substr(data.find(' ') + 1, data.length());
+                    node* open_tag = new node(tag_name, true, false, false, false);
+                    open_tag->addAtrr(attr_name);
+                    if (r == 0)
+                    {
+                        this->setRoot(open_tag);
+                        xmlTags.push(this->getRoot());
+                        r = 1;
+                    }
+                    else
+                    {
+                        xmlTags.push(open_tag);
+                    }
+                }
+                else {
+                    tag_name = data;
+                    node* open_tag = new node(tag_name, true, false, false, false);
+                    if (r == 0)
+                    {
+                        this->setRoot(open_tag);
+                        xmlTags.push(this->getRoot());
+                        r = 1;
+                    }
+                    else
+                    {
+                        xmlTags.push(open_tag);
+                    }
+                }
+            }
+            data = "";
+        }
+        else
+        {
+            while (rawXml[i] != '<' && i!=rawXml.size())
+            {
+                data += rawXml[i];
+                i++;
+            }
+            data = trim(data);
+            if (data != "")
+            {
+                node* data_node_ = new node(data, false, false, false, false);
+                data_node(&xmlTags, data_node_);
+            }
             data = "";
             i--;
         }
-        if (rawXml[i] == '>') continue;
+    }
+}
 
-        if (rawXml[i] == '<' && rawXml[i + 1] == '/')
-        {
-            i += 2;
-            while (rawXml[i] != '>')
-            {
-                end_tag += rawXml[i];
-                i++;
-            }
-            allocate_tage_to_parent(&xmlTags, end_tag);
-            end_tag = "";
+std::string Tree::minify(node* root, int tab)
+{
+    std::string s="";
+    if (root->getChild().size() == 0) {
+        if (!root->isTag())
+            //cout << root->tagName();
+            s+=root->tagName();
+        else {
+            //cout << '<' + root->tagName() << '>' << "</" << root->getCorrectTag() << ">";
+            s+='<' + root->tagName() + '>';
+            if (!root->comment&&!root->xml&&!root->self_close)
+                s+= "</" + root->getCorrectTag() + ">";
         }
+        return s;
     }
-}
-
-string Tree::minify(string raw_Xml)
-{   
-    string after_minify = "";
-    for (int i = 0; i < rawXml.length(); i++)
+    else if (root->getChild().size() == 1 && root->getHaveData())
     {
-        if ((int(rawXml[i]) > 32 && int(rawXml[i]) < 125)||(rawXml[i]) ==' '&& rawXml[i+1]!=' '))
-            after_minify += rawXml[i];
+        //cout << '<' + root->tagName() << '>';
+        s+='<' + root->tagName()+'>';
+        s+=minify(root->getChild()[0], 0);
+        //cout << "</" << root->getCorrectTag() << ">";
+        if (!root->comment&&!root->xml&&!root->self_close)
+            s+="</" + root->getCorrectTag() + ">";
+
     }
-    return after_minify;
+    else
+    {
+        //cout << '<' + root->tagName() << '>' ;
+        s+='<' + root->tagName() + '>' ;
+
+        int j = root->getChild().size();
+        for (int k = 0; k < j; k++)
+            s+=minify(root->getChild()[k], tab);
+
+        //cout << "</" << root->getCorrectTag() << ">";
+        if (!root->comment&&!root->xml&&!root->self_close)
+                s+="</" + root->getCorrectTag() + ">";
+
+    }
+    return s;
+
+}
+std::string Tree::minify(){
+    return minify(this->root,1);
 }
 
+
+
+Tree::Tree(std::string rawXml){
+    parser(rawXml);
+}
+void Tree::delete_tree(node *current_node){
+    for (auto i : current_node->children) {
+        delete_tree(i);
+    }
+    delete current_node;
+}
+Tree::~Tree(){
+    delete_tree(root);
+}
+void Tree::setRoot(node* ptr){
+    this->root=ptr;
+}
+node* Tree:: getRoot(){
+    return root;
+}
