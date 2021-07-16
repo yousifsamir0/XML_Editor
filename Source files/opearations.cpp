@@ -8,7 +8,7 @@ string Tree::prettify(node* current_node, string tab)
 		s += tab + "<" + current_node->tag_name + ">";
 	}
 	else if (current_node->getIsSelfClose() && !is_header) {
-		s += tab + "<" + current_node->tag_name + " " + current_node->attr + ">" + "";
+		s += tab + "<" + current_node->tag_name+ ">" + "";
 	}
 
 	else if (current_node->is_tag && !is_header) {
