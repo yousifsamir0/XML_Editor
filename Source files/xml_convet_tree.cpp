@@ -1,14 +1,9 @@
 #include <iostream>
-#include <fstream>
-#include <sstream>
-#include <string>
-#include <vector>
-#include <stack>
-#include <new>
 #include "tree.h"
-using namespace std;
 
-node::node(string name, bool is_tag, bool self_close_, bool comment_, bool xml)
+
+
+node::node(std::string name, bool is_tag, bool self_close_, bool comment_, bool xml)
 {
     this->tag_name = name;
     this->is_tag = is_tag;
@@ -18,102 +13,106 @@ node::node(string name, bool is_tag, bool self_close_, bool comment_, bool xml)
     have_data = false;
     err_tag = "";
     correct_tag = "";
+    num_children=0;
 }
 
 node::~node()
 {
-
+	
 }
-void node::addAtrr(string attrbiute)
-{
-	int i = 0;
-	string name = "";
-	string value = "";
-	while (i < attrbiute.length()) {
-		name = "";
-		value = "";
-		while (attrbiute[i] != '=') {
-			name += attrbiute[i];
-			i++;
-		}
-		i += 2;
-		while (attrbiute[i] != '"' && i < attrbiute.length()) {
-			value += attrbiute[i];
-			i++;
-		}
-		i++;
-		this->attributes.push_back(name);
-		this->attrib_value.push_back(value);
-	}
 
-	this->attr = attrbiute;
-}
-string node::tagName()
+std::string node::tagName()
 {
-    return this->tag_name;
+	return this->tag_name;
 }
 bool node::isTag()
 {
-    return this->is_tag;
+	return this->is_tag;
 }
 void node::addChild(node* child) {
-    this->children.push_back(child);
-    num_children++;
+	this->children.push_back(child);
+	num_children++;
+}
+void node::addAtrr(std::string attrbiute)
+{
+    int i = 0;
+    std::string name="";
+    std::string value="";
+    while (i < attrbiute.length()) {
+        name = "";
+        value = "";
+        while (attrbiute[i] != '=') {
+            name += attrbiute[i];
+            i++;
+        }
+        i+=2;
+        while (attrbiute[i] != '"' && i < attrbiute.length()) {
+            value += attrbiute[i];
+            i++;
+        }
+        i++;
+        this->attributes.push_back(name);
+        this->attrib_value.push_back(value);
+    }
+
+    this->attr = attrbiute;
 }
 void node::setValid(bool statue)
 {
-    this->is_valid = statue;
+	this->is_valid = statue;
 }
-vector<node*> node::getChild()
+std::vector<node*> node::getChild()
 {
-    return this->children;
+	return this->children;
 }
 void node::setHaveData()
 {
-    this->have_data = true;
+	this->have_data = true;
 }
 bool node::getHaveData()
 {
-    return this->have_data;
+	return this->have_data;
 }
-void node::setEndTag(string tag)
+void node::setEndTag(std::string tag)
 {
-    this->err_tag = tag;
+	this->err_tag = tag;
 }
-string node::getEndTag()
+std::string node::getEndTag()
 {
-    return this->err_tag;
+	return this->err_tag;
 }
-void node::setCorrectTag(string tag)
+void node::setCorrectTag(std::string tag)
 {
-    this->correct_tag = tag;
+	this->correct_tag = tag;
 }
-string node::getCorrectTag()
+std::string node::getCorrectTag()
 {
-    return this->correct_tag;
+	return this->correct_tag;
 }
-string node::getAttr()
+std::string node::getAttr()
 {
-    return this->attr;
+	return this->attr;
 }
 bool node::getIsComment()
 {
-    return this->comment;
+	return this->comment;
 }
 bool node::getIsSelfClose()
 {
-    return this->self_close;
+	return this->self_close;
 }
 
 
 
-void Tree::allocate_tage_to_parent(stack<node*>* xmlTags, string tag)
+
+
+void Tree::allocate_tage_to_parent(std::stack<node*>* xmlTags, std::string tag)
 {
     if (!xmlTags->empty()) {
 
         if (xmlTags->top()->tagName() != tag)
         {
-            stack<node*> my_stk;
+            std::stack<node*> my_stk;
 
             while (!xmlTags->empty() && xmlTags->top()->tagName() != tag)
             {
@@ -122,18 +121,19 @@ void Tree::allocate_tage_to_parent(stack<node*>* xmlTags, string tag)
             }
             if (xmlTags->empty())
             {
+
                 while (!my_stk.empty()) {
-                   xmlTags->push(my_stk.top());
+                    xmlTags->push(my_stk.top());
                     my_stk.pop();
                 }
-             xmlTags->top()->setValid(false);
+                xmlTags->top()->setValid(false);
                 node* value = xmlTags->top();
                 xmlTags->pop();
                 xmlTags->top()->addChild(value);
                 value->setCorrectTag(value->tagName());
             }
             else {
-                 node* value = xmlTags->top();
+                node* value = xmlTags->top();
                 xmlTags->pop();
                 xmlTags->top()->addChild(value);
                 value->setValid(true);
@@ -146,32 +146,34 @@ void Tree::allocate_tage_to_parent(stack<node*>* xmlTags, string tag)
                     value->addChild(value_);
                     value = value_;
                 }
-
             }
 
         }
         if (xmlTags->top()->tagName() == tag)
         {
-             node* value = xmlTags->top();
+            node* value = xmlTags->top();
             xmlTags->pop();
             if (!xmlTags->empty())
                 xmlTags->top()->addChild(value);
             value->setValid(true);
             value->setCorrectTag(value->tagName());
-
         }
     }
-
-
 }
-void Tree::data_node(stack<node*>* xmlTags, node* data, bool state) {
+
+void Tree::data_node(std::stack<node*>* xmlTags, node* data) {
+
+
     data->setValid(true);
     xmlTags->top()->addChild(data);
+
 
     if (!data->isTag()) {
         xmlTags->top()->setHaveData();
     }
 }
+
+
 std::string Tree::ltrim(const std::string& s)
 {
     size_t start = s.find_first_not_of(WHITESPACE);
