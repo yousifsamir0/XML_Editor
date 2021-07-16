@@ -317,7 +317,10 @@ std::string Tree::minify(node* root, int tab)
             s+=root->tagName();
         else {
             //cout << '<' + root->tagName() << '>' << "</" << root->getCorrectTag() << ">";
-            s+='<' + root->tagName() + '>';
+            s+='<' + root->tagName();
+	    if(root->getAttr()!="")
+		    s+=(" ")+root->getAttr();
+	    s+='>';
             if (!root->comment&&!root->xml&&!root->self_close)
                 s+= "</" + root->getCorrectTag() + ">";
         }
@@ -326,7 +329,10 @@ std::string Tree::minify(node* root, int tab)
     else if (root->getChild().size() == 1 && root->getHaveData())
     {
         //cout << '<' + root->tagName() << '>';
-        s+='<' + root->tagName()+'>';
+        s+='<' + root->tagName();
+	 if(root->getAttr()!="")
+		    s+=(" ")+root->getAttr();
+	    s+='>';
         s+=minify(root->getChild()[0], 0);
         //cout << "</" << root->getCorrectTag() << ">";
         if (!root->comment&&!root->xml&&!root->self_close)
@@ -336,8 +342,10 @@ std::string Tree::minify(node* root, int tab)
     else
     {
         //cout << '<' + root->tagName() << '>' ;
-        s+='<' + root->tagName() + '>' ;
-
+        s+='<' + root->tagName();
+	if(root->getAttr()!="")
+		    s+=(" ")+root->getAttr();
+	    s+='>';
         int j = root->getChild().size();
         for (int k = 0; k < j; k++)
             s+=minify(root->getChild()[k], tab);
