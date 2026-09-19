@@ -17,7 +17,7 @@ SOURCES += \
     xml_convert_tree.cpp
 
 HEADERS += \
-    Tree.h \
+    Headers/tree.h \
     fcompress.h \
     jsonviewer.h \
     mainwindow.h
